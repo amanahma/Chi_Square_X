@@ -49,7 +49,7 @@ dotenv.config();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEV_PORT_FILE = join(__dirname, '..', '.dev-port');
 
-const PORT = Number(process.env.PORT || 5001);
+const PORT = process.env.PORT || 5001;
 const SECRET_KEY = process.env.SECRET_KEY || 'dev-secret-key';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const DB_PATH = process.env.DATABASE_PATH || join(__dirname, '..', 'meetai.db');
@@ -4011,35 +4011,6 @@ app.delete('/api/meetings/:id', authMiddleware, (req, res) => {
   return res.json({ deleted: true });
 });
 
-// ─── Server Startup ──────────────────────────────────────────────────────────
-
-function startHttpServer(port, attemptsLeft) {
-  const server = http.createServer(app);
-
-  server.on('error', (err) => {
-    console.error('[listen]', err.code, err.message);
-    if (err.code === 'EADDRINUSE' && attemptsLeft > 1) {
-      console.warn(`Port ${port} in use, trying ${port + 1}...`);
-      server.close(() => startHttpServer(port + 1, attemptsLeft - 1));
-      return;
-    }
-    process.exit(1);
-  });
-
-  server.listen(port, () => {
-    try {
-      writeFileSync(DEV_PORT_FILE, String(port), 'utf8');
-    } catch (e) {
-      console.warn('[listen] could not write .dev-port:', e?.message || e);
-    }
-    console.log('');
-    console.log('  Google Meet AI Scribe API');
-    console.log('  ========================');
-    console.log(`  Server:  http://localhost:${port}`);
-    console.log(`  Gemini:  ${GEMINI_API_KEY ? 'Configured' : 'NOT configured (set GEMINI_API_KEY in .env)'}`);
-    console.log(`  Chrome:  ${CHROME_PATH || 'NOT found (set CHROME_PATH in .env)'}`);
-    console.log('');
-  });
-}
-
-startHttpServer(Number(PORT) || 5001, 25);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
