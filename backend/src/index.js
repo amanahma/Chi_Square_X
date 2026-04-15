@@ -788,7 +788,7 @@ async function runBotWorker(meetingId) {
 
     const launchOptions = {
       executablePath: CHROME_PATH,
-      headless: false, // Google Meet often blocks headless browsers
+      headless: process.env.NODE_ENV === 'production' ? 'new' : false,
       args: launchArgs,
       defaultViewport: { width: 1280, height: 720 },
       ignoreDefaultArgs: ['--enable-automation'],
