@@ -6,11 +6,9 @@ services:
     runtime: node
     region: oregon
     rootDir: backend
-    buildCommand: apt-get install -y chromium-browser --no-install-recommends; npm install
+    buildCommand: npm install
     startCommand: node src/index.js
     envVars:
-      - key: CHROME_PATH
-        value: /usr/bin/chromium-browser
       - key: SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY

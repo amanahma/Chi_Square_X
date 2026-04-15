@@ -20,7 +20,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import { summarizeTranscript, validateAndTrimTranscript } from './services/summarizationService.js';
 import { createMeetingAudioRecorder } from './services/audioRecordingService.js';
 import { createTranscriptionService } from './services/transcription/transcriptionService.js';
@@ -84,6 +84,8 @@ function findChromePath() {
   for (const candidate of CHROME_CANDIDATES) {
     if (existsSync(candidate)) return candidate;
   }
+  // Fall back to puppeteer's bundled Chromium (works on Render / CI)
+  try { return puppeteer.executablePath(); } catch (_) {}
   return null;
 }
 
@@ -787,7 +789,8 @@ async function runBotWorker(meetingId) {
     }
 
     const launchOptions = {
-      executablePath: CHROME_PATH,
+      // Use system Chrome if found, otherwise fall back to puppeteer's bundled Chromium
+      ...(CHROME_PATH ? { executablePath: CHROME_PATH } : {}),
       headless: process.env.NODE_ENV === 'production' ? 'new' : false,
       args: launchArgs,
       defaultViewport: { width: 1280, height: 720 },
